@@ -20,6 +20,8 @@ A web application for managing genealogical sources with a Flask backend, React 
 - Source citation formats (e.g., Evidence Explained)
 - GEDCOM import/export
 
+_An ERD (Entity-Relationship Diagram) will be added once core models are finalized._
+
 ## Tech Stack
 
 - **Backend**: Flask (Python)
@@ -218,4 +220,8 @@ python migrate.py
 
 ## License
 
-MIT License
+This project is licensed under the Creative Commons Attribution-NonCommercial 4.0 International License (CC BY-NC 4.0).
+
+You are free to use, share, and adapt the code **for non-commercial purposes**, as long as you give proper credit.
+
+Full license text: [https://creativecommons.org/licenses/by-nc/4.0/](https://creativecommons.org/licenses/by-nc/4.0/)
