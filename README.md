@@ -220,8 +220,8 @@ python migrate.py
 
 ## License
 
-This project is licensed under the Creative Commons Attribution-NonCommercial 4.0 International License (CC BY-NC 4.0).
+## License
 
-You are free to use, share, and adapt the code **for non-commercial purposes**, as long as you give proper credit.
+GenSource is released under a modified MIT License that permits use in professional and commercial work, but **prohibits resale or relicensing** of the software itself.
 
-Full license text: [https://creativecommons.org/licenses/by-nc/4.0/](https://creativecommons.org/licenses/by-nc/4.0/)
+See the [LICENSE](./LICENSE) file for details.
