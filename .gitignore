@@ -22,6 +22,12 @@ wheels/
 *.egg
 MANIFEST
 
+# Virtual environments (common names)
+venv/
+.venv/
+env/
+.env/
+
 # dotenv environment variables file
 .env
 .env.test
