@@ -1,11 +1,37 @@
+# Node.js
 node_modules
 frontend/node_modules
-backend/__pycache__/
-*.pyc
+
+# Python
+__pycache__/
+*.py[cod]
 *.pyo
 *.pyd
 *.db
+
+# Python virtual environments
+venv/
+backend/venv/
+
+# Build artifacts
+dist/
+build/
+frontend/build/
+backend/build/
+*.egg-info/
+.eggs/
+
+# Environment variables
 .env
-venv
-dist
-build
+.env.*
+
+# Logs and temp files
+*.log
+*.tmp
+
+# Docker build cache tarballs (if manually saved)
+*.tar
+
+# OS-specific files
+.DS_Store
+Thumbs.db
