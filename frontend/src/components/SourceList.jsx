@@ -13,6 +13,7 @@ const SourceList = () => {
   const fetchSources = async () => {
     try {
       const response = await axios.get('/api/sources');
+      console.log('API response:', response.data); // ✅ Move inside try block
       setSources(response.data);
       setLoading(false);
     } catch (error) {
@@ -20,7 +21,6 @@ const SourceList = () => {
       setLoading(false);
     }
   };
-
   const deleteSource = async (id) => {
     if (window.confirm('Are you sure you want to delete this source?')) {
       try {

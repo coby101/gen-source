@@ -45,15 +45,15 @@ genealogy-app/
 ├── frontend/               # React frontend
 │   ├── src/
 │   │   ├── components/
-│   │   ├── App.js
-│   │   ├── index.js
+│   │   ├── App.jsx
+│   │   ├── main.jsx
 │   │   └── ...
 │   ├── package.json
 │   └── ...
 ├── docker/
 │   ├── Dockerfile.backend
 │   ├── Dockerfile.frontend
-│   └── docker-compose.yml
+├── docker-compose.yml
 ├── .env
 └── README.md
 ```
@@ -80,7 +80,7 @@ genealogy-app/
 Create a `.env` file with:
 
 ```
-# Database (for local development)
+# Database
 POSTGRES_DB=genealogy_db
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=secret
@@ -93,7 +93,7 @@ FLASK_ENV=development
 SECRET_KEY=your-secret-key-here
 
 # Frontend
-REACT_APP_API_URL=http://localhost:5000/api
+VITE_API_URL=http://localhost:5000/api
 ```
 
 ### Local Development (without Docker)
@@ -115,7 +115,7 @@ python run.py
 ```bash
 cd frontend
 npm install
-npm start
+npm run dev
 ```
 
 #### Database Setup
@@ -217,8 +217,6 @@ python migrate.py
 3. Make your changes
 4. Test your changes
 5. Submit a pull request
-
-## License
 
 ## License
 

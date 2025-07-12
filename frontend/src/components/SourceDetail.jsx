@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
@@ -8,20 +8,21 @@ const SourceDetail = () => {
   const [source, setSource] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchSource();
-  }, [id]);
 
-  const fetchSource = async () => {
-    try {
-      const response = await axios.get(`/api/sources/${id}`);
+  const fetchSource = useCallback(async () => {
+      try {
+          const response = await axios.get(`/api/sources/${id}`);
       setSource(response.data);
       setLoading(false);
-    } catch (error) {
+  } catch (error) {
       console.error('Error fetching source:', error);
       setLoading(false);
-    }
-  };
+  }
+  }, [id]);
+
+  useEffect(() => {
+  fetchSource();
+  }, [fetchSource]);
 
   const deleteSource = async () => {
     if (window.confirm('Are you sure you want to delete this source?')) {
@@ -60,15 +61,15 @@ const SourceDetail = () => {
         >
           Edit
         </button>
-        <button 
-          onClick={deleteSource} 
+        <button
+          onClick={deleteSource}
           className="button danger"
           style={{marginLeft: '10px'}}
         >
           Delete
         </button>
-        <button 
-          onClick={() => navigate('/')} 
+        <button
+          onClick={() => navigate('/')}
           className="button secondary"
           style={{marginLeft: '10px'}}
         >
@@ -79,4 +80,4 @@ const SourceDetail = () => {
   );
 };
 
-export default SourceDetail;
+export default SourceDetail; 

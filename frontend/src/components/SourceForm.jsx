@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
@@ -14,13 +14,7 @@ const SourceForm = () => {
   });
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    if (id) {
-      fetchSource();
-    }
-  }, [id]);
-
-  const fetchSource = async () => {
+  const fetchSource = useCallback(async () => {
     try {
       setLoading(true);
       const response = await axios.get(`/api/sources/${id}`);
@@ -36,7 +30,13 @@ const SourceForm = () => {
       console.error('Error fetching source:', error);
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    if (id) {
+      fetchSource();
+    }
+  }, [id, fetchSource]);
 
   const handleChange = (e) => {
     setFormData({
