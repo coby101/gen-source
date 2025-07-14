@@ -92,7 +92,7 @@ GenSource/
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/coby101/gen-source.git
+   git clone https://github.com/<user>/gen-source.git
    cd gen-source
    ```
 2. **Start all services**:
