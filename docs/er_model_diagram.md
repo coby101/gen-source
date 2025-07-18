@@ -77,6 +77,14 @@ erDiagram
         uuid created_by_user_id FK
     }
 
+    RELATIONSHIP_QUALIFIERS {
+        uuid id PK
+        uuid relationship_id FK
+        enum qualifier "adoptive|biological|step|surrogate|legal|social|genetic"
+        timestamp created_at
+        uuid created_by_user_id FK
+    }
+
     %% Source Attribution and Evidence
     FACT_SOURCES {
         uuid id PK
@@ -144,29 +152,6 @@ erDiagram
         uuid added_by_user_id FK
     }
 
-    %% Audit and Change Tracking
-    FACT_HISTORY {
-        uuid id PK
-        uuid fact_id FK
-        text old_values "JSON of previous values"
-        text new_values "JSON of new values"
-        enum change_type "created|updated|deleted|source_added|source_removed"
-        text change_reason
-        timestamp changed_at
-        uuid changed_by_user_id FK
-    }
-
-    INDIVIDUAL_HISTORY {
-        uuid id PK
-        uuid individual_id FK
-        text old_values "JSON of previous values"
-        text new_values "JSON of new values"
-        enum change_type "created|updated|merged|split"
-        text change_reason
-        timestamp changed_at
-        uuid changed_by_user_id FK
-    }
-
     %% User Management
     USERS {
         uuid id PK
@@ -214,16 +199,15 @@ erDiagram
     INDIVIDUALS ||--o{ FACTS : "has"
     INDIVIDUALS ||--o{ EXTERNAL_LINKS : "linked_to"
     INDIVIDUALS ||--o{ RESEARCH_NOTES : "has"
-    INDIVIDUALS ||--o{ INDIVIDUAL_HISTORY : "has_history"
     INDIVIDUALS ||--o{ RELATIONSHIPS : "individual1"
     INDIVIDUALS ||--o{ RELATIONSHIPS : "individual2"
     
     FACTS ||--o{ FACT_SOURCES : "supported_by"
-    FACTS ||--o{ FACT_HISTORY : "has_history"
     FACTS ||--o{ CONFLICTING_FACTS : "fact1"
     FACTS ||--o{ CONFLICTING_FACTS : "fact2"
     
     RELATIONSHIPS ||--o{ RELATIONSHIP_SOURCES : "supported_by"
+    RELATIONSHIPS ||--o{ RELATIONSHIP_QUALIFIERS : "qualified_by"
     
     SOURCE_COLLECTIONS ||--o{ SOURCE_COLLECTION_ITEMS : "contains"
     SOURCE_COLLECTIONS ||--o{ SOURCE_COLLECTIONS : "parent"
@@ -233,8 +217,6 @@ erDiagram
     USERS ||--o{ FACTS : "created"
     USERS ||--o{ RELATIONSHIPS : "created"
     USERS ||--o{ RESEARCH_NOTES : "created"
-    USERS ||--o{ FACT_HISTORY : "changed"
-    USERS ||--o{ INDIVIDUAL_HISTORY : "changed"
     USERS ||--o{ SOURCE_RELIABILITY_HISTORY : "changed"
 ```
 

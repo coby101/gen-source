@@ -1,7 +1,12 @@
 from flask import Blueprint, request, jsonify
 from . import db
-from .models import Source, User, Tag
 from datetime import datetime
+from .models import (
+    Source, SourceReliabilityHistory, SourceCollection, SourceCollectionItem,
+    User, Individual, Fact, FactSource, ExternalLink,
+    Relationship, RelationshipSource, RelationshipQualifier,
+    ResearchNote, ConflictingFact
+)
 
 main = Blueprint('main', __name__)
 
@@ -84,16 +89,3 @@ def delete_source(id):
     db.session.delete(source)
     db.session.commit()
     return '', 204
-
-@main.route('/api/tags', methods=['GET'])
-def get_tags():
-    tags = Tag.query.all()
-    return jsonify([{'id': t.id, 'name': t.name} for t in tags])
-
-@main.route('/api/tags', methods=['POST'])
-def create_tag():
-    data = request.get_json()
-    new_tag = Tag(name=data.get('name'))
-    db.session.add(new_tag)
-    db.session.commit()
-    return jsonify({'id': new_tag.id, 'name': new_tag.name}), 201

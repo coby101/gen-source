@@ -15,8 +15,7 @@ from .base import BaseModel
 from .user import User
 from .source import Source, SourceReliabilityHistory, SourceCollection, SourceCollectionItem
 from .individual import Individual, Fact, FactSource, ExternalLink
-from .relationship import Relationship, RelationshipSource
-from .audit import FactHistory, IndividualHistory
+from .relationship import Relationship, RelationshipSource, RelationshipQualifier
 from .research import ResearchNote, ConflictingFact
 
 __all__ = [
@@ -32,8 +31,6 @@ __all__ = [
     'ExternalLink',
     'Relationship',
     'RelationshipSource',
-    'FactHistory',
-    'IndividualHistory',
     'ResearchNote',
     'ConflictingFact'
 ]
