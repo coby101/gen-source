@@ -86,7 +86,7 @@ erDiagram
     }
 
     %% Source Attribution and Evidence
-    FACT_SOURCES {
+    CITATIONS {
         uuid id PK
         uuid fact_id FK
         uuid source_id FK
@@ -191,7 +191,7 @@ erDiagram
     }
 
     %% Relationships
-    SOURCES ||--o{ FACT_SOURCES : "supports"
+    SOURCES ||--o{ CITATIONS : "supports"
     SOURCES ||--o{ RELATIONSHIP_SOURCES : "supports"
     SOURCES ||--o{ SOURCE_RELIABILITY_HISTORY : "has_history"
     SOURCES ||--o{ SOURCE_COLLECTION_ITEMS : "belongs_to"
@@ -202,7 +202,7 @@ erDiagram
     INDIVIDUALS ||--o{ RELATIONSHIPS : "individual1"
     INDIVIDUALS ||--o{ RELATIONSHIPS : "individual2"
     
-    FACTS ||--o{ FACT_SOURCES : "supported_by"
+    FACTS ||--o{ CITATIONS : "supported_by"
     FACTS ||--o{ CONFLICTING_FACTS : "fact1"
     FACTS ||--o{ CONFLICTING_FACTS : "fact2"
     
@@ -259,7 +259,7 @@ erDiagram
 1. Upload/create source record
 2. Link individuals mentioned in source
 3. Extract facts from source
-4. Create fact_sources links with evidence assessment
+4. Create citations links with evidence assessment
 5. Note any conflicts with existing facts
 
 ### Deprecating Unreliable Sources
