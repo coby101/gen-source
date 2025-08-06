@@ -50,6 +50,18 @@ class Source(db.Model):
 
     created_by_user = db.relationship("User", backref="sources")
 
+    def update_confidence_level(self, new_level, reason, user_id):
+        if self.confidence_level != new_level:
+            from .source import SourceReliabilityHistory
+            history = SourceReliabilityHistory(
+                source_id=self.id,
+                reliability_status=new_level,
+                reason=reason,
+                changed_by_user_id=user_id
+            )
+            self.confidence_level = new_level
+            db.session.add(history)
+
     def __repr__(self):
         return f"<Source {self.title} ({self.source_type.value})>"
 
