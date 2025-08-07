@@ -4,25 +4,36 @@ A full-stack web application for managing genealogical sources, built with Flask
 
 ## Project Status
 
-🚧 **Early Development Stage**  
-The application is in its initial phase with basic scaffolding completed. Backend and frontend are connected, Docker builds and serves successfully. APIs and models are in progress.
+✅ **Database Schema Complete** - *Updated: August 2025*  
+The application now has a comprehensive database schema with all core models implemented. Backend and frontend are connected, Docker builds and serves successfully. Ready for API development and feature implementation.
 
 ## Features
 
 ### Current Features
-- **Source Management**: Create, read, update, and delete genealogical sources
-- **Source Types**: Support for different source types (documents, photos, records)
-- **Tag System**: Basic tagging infrastructure (backend ready)
+- **Complete Database Schema**: Full genealogical data model with sources, individuals, facts, relationships, and research management
+- **Source Management**: Create, read, update, and delete genealogical sources with comprehensive metadata
+- **Source Collections**: Organize sources into hierarchical collections for better organization
+- **Source Types & Fact Types**: Configurable type systems for sources and facts
+- **Individual Management**: Complete person records with biographical information
+- **Fact Management**: Structured facts with confidence levels and source citations
+- **Relationship Management**: Complex relationship modeling with qualifiers (biological, adoptive, step, etc.)
+- **Citation System**: Flexible citation linking to any object (facts, relationships, etc.)
+- **External System Integration**: Links to Ancestry, MyHeritage, FamilySearch, and other platforms
+- **Research Workflow**: Research notes, conflict detection, and resolution tracking
+- **Source Reliability Tracking**: Historical tracking of source reliability changes
 - **RESTful APIs**: Flask backend providing JSON APIs
+- **User Management**: Basic user authentication system
 
 ### Planned Features
 
 - Advanced search and filtering capabilities
 - Source categorization and tagging system
-- User authentication and authorization
 - OCR integration for scanned sources
 - Source citation formats (e.g., Evidence Explained)
 - GEDCOM import/export
+- Family tree visualization
+- Research collaboration tools
+- Mobile-responsive design
 
 ## Tech Stack
 
@@ -106,6 +117,7 @@ GenSource/
 │   │   ├── README
 │   │   ├── script.py.mako
 │   │   └── versions/
+│   │       └── ab398d6a91f4_initial_migration.py  # Complete schema migration
 │   ├── tests/                      # Backend tests
 │   │   ├── __init__.py
 │   │   ├── conftest.py             # Test configuration
@@ -314,38 +326,47 @@ VITE_API_URL=http://localhost:5000/api
    ```bash
    cd backend
    flask db upgrade
+   flask seed # optional arg --reset
    ```
 
 ## Database Schema
 
-The app uses the following database tables:
+The app uses a comprehensive database schema with the following core tables:
 
-- **sources**: Main table for genealogical sources (title, description, type, date, location)
-- **users**: User authentication (future feature)
-- **tags**: For categorizing sources
-- **source_tags**: Many-to-many relationship between sources and tags
+### Core Entities
+- **users**: User authentication and profile information
+- **individuals**: Person records with biographical information
+- **facts**: Structured facts about individuals (birth, death, marriage, etc.)
+- **relationships**: Connections between individuals with qualifiers
+- **sources**: Genealogical sources (documents, photos, records)
+- **citations**: Links between sources and any citeable object
+
+### Supporting Tables
+- **fact_types**: Configurable fact type definitions
+- **source_types**: Configurable source type definitions  
+- **source_collections**: Hierarchical organization of sources
+- **source_collection_items**: Many-to-many relationship between sources and collections
+- **source_reliability_history**: Historical tracking of source reliability changes
+- **relationship_qualifiers**: Qualifiers for relationships (biological, adoptive, step, etc.)
+
+### Research & Analysis
+- **research_notes**: Research notes and tasks for individuals
+- **conflicting_facts**: Detection and resolution of fact conflicts
+- **external_links**: Integration with external genealogy platforms
 
 ### Entity Relationship Diagram
 
 ```mermaid
 erDiagram
     %% Core Entities
-    SOURCES {
+    USERS {
         uuid id PK
-        string title
-        text description
-        enum source_type "document|image|pdf|citation|external_record"
-        string file_path "for uploaded files"
-        string external_url "for online sources"
-        string source_text "formatted source text"
-        date source_date "date of source creation"
-        string location "where source was created/found"
-        enum confidence_level "high|medium|low|questionable"
-        text notes
-        boolean is_active "for soft deletion/deprecation"
+        string username UK
+        string email UK
+        string password_hash
         timestamp created_at
-        timestamp updated_at
-        uuid created_by_user_id FK
+        timestamp last_login
+        boolean is_active
     }
 
     INDIVIDUALS {
@@ -365,16 +386,23 @@ erDiagram
         uuid created_by_user_id FK
     }
 
+    FACT_TYPES {
+        integer id PK
+        string key UK
+        string label
+        text description
+    }
+
     FACTS {
         uuid id PK
         uuid individual_id FK
-        enum fact_type "birth|death|marriage|divorce|residence|occupation|education|military|immigration|other"
-        string fact_value "the actual fact data"
+        integer fact_type_id FK
+        string fact_value
         date fact_date
         string fact_place
         text description
-        enum confidence_level "high|medium|low|questionable"
-        boolean is_primary "primary vs alternative facts"
+        enum confidence_level "high|medium|low|questionable|certain|doubtful|speculative"
+        boolean is_primary
         timestamp created_at
         timestamp updated_at
         uuid created_by_user_id FK
@@ -384,11 +412,11 @@ erDiagram
         uuid id PK
         uuid individual1_id FK
         uuid individual2_id FK
-        enum relationship_type "parent|child|spouse|partner|sibling|other"
+        enum relationship_type "parent|child|spouse|partner|sibling|guardian|ward|other"
         date relationship_start_date
         date relationship_end_date
         string relationship_notes
-        enum confidence_level "high|medium|low|questionable"
+        enum confidence_level "high|medium|low|questionable|certain|doubtful|speculative"
         timestamp created_at
         timestamp updated_at
         uuid created_by_user_id FK
@@ -397,32 +425,81 @@ erDiagram
     RELATIONSHIP_QUALIFIERS {
         uuid id PK
         uuid relationship_id FK
-        string qualifier
+        enum qualifier "natural|adoptive|biological|step|surrogate|legal|social|genetic"
         timestamp created_at
         uuid created_by_user_id FK
     }
 
-    %% Source Attribution and Evidence
+    SOURCE_TYPES {
+        integer id PK
+        string key UK
+        string label
+        text description
+        boolean is_active
+    }
+
+    SOURCES {
+        uuid id PK
+        string title
+        text description
+        integer source_type_id FK
+        string file_path
+        string external_url
+        string source_text
+        date source_date
+        string location
+        enum confidence_level "high|medium|low|questionable|certain|doubtful|speculative"
+        text notes
+        boolean is_active
+        timestamp created_at
+        timestamp updated_at
+        uuid created_by_user_id FK
+    }
+
+    SOURCE_COLLECTIONS {
+        uuid id PK
+        string name
+        text description
+        uuid parent_collection_id FK
+        timestamp created_at
+        uuid created_by_user_id FK
+    }
+
+    SOURCE_COLLECTION_ITEMS {
+        uuid source_id PK,FK
+        uuid collection_id PK,FK
+        timestamp added_at
+        uuid added_by_user_id FK
+    }
+
+    SOURCE_RELIABILITY_HISTORY {
+        uuid id PK
+        uuid source_id FK
+        enum reliability_status "reliable|questionable|unreliable|deprecated"
+        text reason
+        timestamp changed_at
+        uuid changed_by_user_id FK
+    }
+
     CITATIONS {
         uuid id PK
-        uuid fact_id FK
+        uuid cited_object_id
+        string cited_object_type
         uuid source_id FK
         enum evidence_type "primary|secondary|circumstantial"
-        text source_notes "specific notes about this source for this fact"
+        text source_notes
         integer page_number
         string section_reference
         enum supports_claim "supports|contradicts|neutral"
-        enum confidence_level "high|medium|low|questionable"
         timestamp created_at
         uuid created_by_user_id FK
     }
 
-    %% External System Integration
     EXTERNAL_LINKS {
         uuid id PK
         uuid individual_id FK
         enum platform "ancestry|myheritage|familysearch|findmypast|other"
-        string external_id "ID in external system"
+        string external_id
         string external_url
         text sync_notes
         timestamp last_synced
@@ -431,19 +508,6 @@ erDiagram
         uuid created_by_user_id FK
     }
 
-    %% User Management
-    USERS {
-        uuid id PK
-        string username
-        string email
-        string password_hash
-        string full_name
-        boolean is_active
-        timestamp created_at
-        timestamp last_login
-    }
-
-    %% Research and Analysis
     RESEARCH_NOTES {
         uuid id PK
         uuid individual_id FK
@@ -470,38 +534,60 @@ erDiagram
     }
 
     %% Relationships
-    SOURCES ||--o{ CITATIONS : "supports"
-    
+    USERS ||--o{ INDIVIDUALS : "creates"
+    USERS ||--o{ FACTS : "creates"
+    USERS ||--o{ RELATIONSHIPS : "creates"
+    USERS ||--o{ RELATIONSHIP_QUALIFIERS : "creates"
+    USERS ||--o{ SOURCES : "creates"
+    USERS ||--o{ SOURCE_COLLECTIONS : "creates"
+    USERS ||--o{ SOURCE_COLLECTION_ITEMS : "adds"
+    USERS ||--o{ SOURCE_RELIABILITY_HISTORY : "changes"
+    USERS ||--o{ CITATIONS : "creates"
+    USERS ||--o{ EXTERNAL_LINKS : "creates"
+    USERS ||--o{ RESEARCH_NOTES : "creates"
+    USERS ||--o{ CONFLICTING_FACTS : "creates"
+
     INDIVIDUALS ||--o{ FACTS : "has"
-    INDIVIDUALS ||--o{ EXTERNAL_LINKS : "linked_to"
-    INDIVIDUALS ||--o{ RESEARCH_NOTES : "has"
     INDIVIDUALS ||--o{ RELATIONSHIPS : "individual1"
     INDIVIDUALS ||--o{ RELATIONSHIPS : "individual2"
-    
+    INDIVIDUALS ||--o{ EXTERNAL_LINKS : "linked_to"
+    INDIVIDUALS ||--o{ RESEARCH_NOTES : "has"
+
+    FACT_TYPES ||--o{ FACTS : "defines"
     FACTS ||--o{ CITATIONS : "supported_by"
     FACTS ||--o{ CONFLICTING_FACTS : "fact1"
     FACTS ||--o{ CONFLICTING_FACTS : "fact2"
-    
-    RELATIONSHIPS ||--o{ CITATIONS : "supported_by"
+
     RELATIONSHIPS ||--o{ RELATIONSHIP_QUALIFIERS : "qualified_by"
-    
-    USERS ||--o{ SOURCES : "created"
-    USERS ||--o{ INDIVIDUALS : "created"
-    USERS ||--o{ FACTS : "created"
-    USERS ||--o{ RELATIONSHIPS : "created"
-    USERS ||--o{ RESEARCH_NOTES : "created"
+    RELATIONSHIPS ||--o{ CITATIONS : "supported_by"
+
+    SOURCE_TYPES ||--o{ SOURCES : "defines"
+    SOURCES ||--o{ SOURCE_COLLECTION_ITEMS : "contained_in"
+    SOURCES ||--o{ SOURCE_RELIABILITY_HISTORY : "reliability_tracked"
+    SOURCES ||--o{ CITATIONS : "supports"
+
+    SOURCE_COLLECTIONS ||--o{ SOURCE_COLLECTIONS : "parent_of"
+    SOURCE_COLLECTIONS ||--o{ SOURCE_COLLECTION_ITEMS : "contains"
 ```
 
 ## API Endpoints
 
+### Current API Endpoints
+- `GET /api/health` - Health check
 - `GET /api/sources` - List all sources
 - `POST /api/sources` - Create new source
 - `GET /api/sources/{id}` - Get source details
 - `PUT /api/sources/{id}` - Update source
 - `DELETE /api/sources/{id}` - Delete source
-- `GET /api/tags` - List all tags
-- `POST /api/tags` - Create new tag
-- `GET /health` - Check application 
+
+### Planned API Endpoints
+- `GET|POST|PUT|DELETE /api/individuals` - Individual management
+- `GET|POST|PUT|DELETE /api/facts` - Fact management
+- `GET|POST|PUT|DELETE /api/relationships` - Relationship management
+- `GET|POST|PUT|DELETE /api/citations` - Citation management
+- `GET|POST|PUT|DELETE /api/research-notes` - Research workflow
+- `GET|POST|PUT|DELETE /api/source-collections` - Collection management
+- `GET|POST|PUT|DELETE /api/external-links` - External system integration
 
 ## Development Workflow
 
@@ -581,6 +667,21 @@ cd backend
 flask db migrate -m "Add new field"
 flask db upgrade
 ```
+
+## Recent Changes
+
+### Database Schema Migration (August 2025)
+- ✅ **Complete database schema implementation** with all core models
+- ✅ **Added fact_types and source_types** for configurable type systems
+- ✅ **Implemented source_collections** for hierarchical source organization
+- ✅ **Added relationship_qualifiers** for detailed relationship types (biological, adoptive, step, etc.)
+- ✅ **Enhanced confidence levels** (high, medium, low, questionable, certain, doubtful, speculative)
+- ✅ **Expanded relationship types** (parent, child, spouse, partner, sibling, guardian, ward, other)
+- ✅ **Flexible citation system** supporting any object type
+- ✅ **Source reliability tracking** with historical changes
+- ✅ **External system integration** for genealogy platforms
+- ✅ **Research workflow management** with notes, conflicts, and resolution tracking
+
 ## Troubleshooting
 
 ### Common Issues
@@ -631,7 +732,7 @@ docker-compose exec backend flask db upgrade
 1. **Fork the repository**
 2. **Create a feature branch**: `git checkout -b feature/amazing-feature`
 3. **Make your changes** and test thoroughly
-4. **Commit your changes**: `git commit -m 'Add amazing feature'`
+4. **Commit your changes**: `git commit -m 'Add amazing feature'**
 5. **Push to the branch**: `git push origin feature/amazing-feature`
 6. **Open a Pull Request**
 
