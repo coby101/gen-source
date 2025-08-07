@@ -15,15 +15,18 @@ erDiagram
         uuid id PK
         string title
         text description
-        enum source_type "document|image|pdf|citation|external_record"
-        string file_path "for uploaded files"
-        string external_url "for online sources"
-        string citation_text "formatted citation"
-        date source_date "date of source creation"
-        string location "where source was created/found"
-        enum confidence_level "high|medium|low|questionable"
+        enum source_type
+        string file_path
+        string external_url
+        string source_text
+        date source_date
+        string location
+        enum confidence_level
         text notes
-        boolean is_active "for soft deletion/deprecation"
+        string acquired_from
+        date acquisition_date
+        text provenance_notes
+        boolean is_active
         timestamp created_at
         timestamp updated_at
         uuid created_by_user_id FK
@@ -49,13 +52,13 @@ erDiagram
     FACTS {
         uuid id PK
         uuid individual_id FK
-        enum fact_type "birth|death|marriage|divorce|residence|occupation|education|military|immigration|other"
-        string fact_value "the actual fact data"
+        enum fact_type
+        string fact_value
         date fact_date
         string fact_place
         text description
-        enum confidence_level "high|medium|low|questionable"
-        boolean is_primary "primary vs alternative facts"
+        enum confidence_level
+        boolean is_primary
         timestamp created_at
         timestamp updated_at
         uuid created_by_user_id FK
@@ -65,13 +68,13 @@ erDiagram
         uuid id PK
         uuid individual1_id FK
         uuid individual2_id FK
-        enum relationship_type "parent|child|spouse|partner|sibling|adoptive_parent|adoptive_child|step_parent|step_child|guardian|ward|other"
+        enum relationship_type
         date relationship_start_date
         date relationship_end_date
         string relationship_notes
-        boolean is_biological "for parent/child relationships"
-        boolean is_legal "legally recognized relationship"
-        enum confidence_level "high|medium|low|questionable"
+        boolean is_biological
+        boolean is_legal
+        enum confidence_level
         timestamp created_at
         timestamp updated_at
         uuid created_by_user_id FK
@@ -88,27 +91,19 @@ erDiagram
     %% Source Attribution and Evidence
     CITATIONS {
         uuid id PK
-        uuid fact_id FK
         uuid source_id FK
-        enum evidence_type "primary|secondary|circumstantial"
-        text source_notes "specific notes about this source for this fact"
+        string cited_object_type "fact or relationship"
+        uuid cited_object_id
         integer page_number
         string section_reference
-        enum supports_fact "supports|contradicts|neutral"
+        text quote
+        enum confidence_level_override
+        enum supports "supports|contradicts|neutral"
+        enum legibility "clear|faint|illegible"
+        text interpretation_notes
+        boolean private
         timestamp created_at
-        uuid created_by_user_id FK
-    }
-
-    RELATIONSHIP_SOURCES {
-        uuid id PK
-        uuid relationship_id FK
-        uuid source_id FK
-        enum evidence_type "primary|secondary|circumstantial"
-        text source_notes
-        integer page_number
-        string section_reference
-        enum supports_relationship "supports|contradicts|neutral"
-        timestamp created_at
+        timestamp updated_at
         uuid created_by_user_id FK
     }
 
@@ -191,8 +186,7 @@ erDiagram
     }
 
     %% Relationships
-    SOURCES ||--o{ CITATIONS : "supports"
-    SOURCES ||--o{ RELATIONSHIP_SOURCES : "supports"
+    SOURCES ||--o{ CITATIONS : "is cited by"
     SOURCES ||--o{ SOURCE_RELIABILITY_HISTORY : "has_history"
     SOURCES ||--o{ SOURCE_COLLECTION_ITEMS : "belongs_to"
     
@@ -202,11 +196,11 @@ erDiagram
     INDIVIDUALS ||--o{ RELATIONSHIPS : "individual1"
     INDIVIDUALS ||--o{ RELATIONSHIPS : "individual2"
     
-    FACTS ||--o{ CITATIONS : "supported_by"
+    CITATIONS }o--|| FACTS : "supports"
+    CITATIONS }o--|| RELATIONSHIPS : "supports"
     FACTS ||--o{ CONFLICTING_FACTS : "fact1"
     FACTS ||--o{ CONFLICTING_FACTS : "fact2"
     
-    RELATIONSHIPS ||--o{ RELATIONSHIP_SOURCES : "supported_by"
     RELATIONSHIPS ||--o{ RELATIONSHIP_QUALIFIERS : "qualified_by"
     
     SOURCE_COLLECTIONS ||--o{ SOURCE_COLLECTION_ITEMS : "contains"

@@ -245,11 +245,11 @@ Create a `.env` file with the following:
 
 ```
 # Database
-POSTGRES_DB=genealogy_db
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=<your_postgres_password>
-POSTGRES_HOST=localhost
-POSTGRES_PORT=5432
+PRODUCTION_DB=genealogy_db
+PRODUCTION_USER=postgres
+PRODUCTION_PASSWORD=<your_postgres_password>
+PRODUCTION_HOST=localhost
+PRODUCTION_PORT=5432
 
 # Flask
 FLASK_APP=run.py
@@ -337,7 +337,7 @@ erDiagram
         enum source_type "document|image|pdf|citation|external_record"
         string file_path "for uploaded files"
         string external_url "for online sources"
-        string citation_text "formatted citation"
+        string source_text "formatted source text"
         date source_date "date of source creation"
         string location "where source was created/found"
         enum confidence_level "high|medium|low|questionable"
@@ -403,7 +403,7 @@ erDiagram
     }
 
     %% Source Attribution and Evidence
-    FACT_SOURCES {
+    CITATIONS {
         uuid id PK
         uuid fact_id FK
         uuid source_id FK
@@ -411,7 +411,7 @@ erDiagram
         text source_notes "specific notes about this source for this fact"
         integer page_number
         string section_reference
-        enum supports_fact "supports|contradicts|neutral"
+        enum supports_claim "supports|contradicts|neutral"
         enum confidence_level "high|medium|low|questionable"
         timestamp created_at
         uuid created_by_user_id FK
@@ -470,7 +470,7 @@ erDiagram
     }
 
     %% Relationships
-    SOURCES ||--o{ FACT_SOURCES : "supports"
+    SOURCES ||--o{ CITATIONS : "supports"
     
     INDIVIDUALS ||--o{ FACTS : "has"
     INDIVIDUALS ||--o{ EXTERNAL_LINKS : "linked_to"
@@ -478,10 +478,11 @@ erDiagram
     INDIVIDUALS ||--o{ RELATIONSHIPS : "individual1"
     INDIVIDUALS ||--o{ RELATIONSHIPS : "individual2"
     
-    FACTS ||--o{ FACT_SOURCES : "supported_by"
+    FACTS ||--o{ CITATIONS : "supported_by"
     FACTS ||--o{ CONFLICTING_FACTS : "fact1"
     FACTS ||--o{ CONFLICTING_FACTS : "fact2"
     
+    RELATIONSHIPS ||--o{ CITATIONS : "supported_by"
     RELATIONSHIPS ||--o{ RELATIONSHIP_QUALIFIERS : "qualified_by"
     
     USERS ||--o{ SOURCES : "created"

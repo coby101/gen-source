@@ -26,9 +26,9 @@ services:
   db:
     image: postgres:16.9
     environment:
-      - POSTGRES_DB=genealogy_db
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=secret
+      - PRODUCTION_DB=genealogy_db
+      - PRODUCTION_USER=postgres
+      - PRODUCTION_PASSWORD=secret
     ports:
       - "5432:5432"
     volumes:
