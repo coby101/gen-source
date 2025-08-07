@@ -14,8 +14,8 @@ This package contains all SQLAlchemy models organized by domain:
 from .base import BaseModel
 from .user import User
 from .source import Source, SourceReliabilityHistory, SourceCollection, SourceCollectionItem
-from .individual import Individual, Fact, FactSource, ExternalLink
-from .relationship import Relationship, RelationshipSource, RelationshipQualifier
+from .individual import Individual, Fact, Citation, ExternalLink
+from .relationship import Relationship, RelationshipQualifier
 from .research import ResearchNote, ConflictingFact
 
 __all__ = [
@@ -27,10 +27,9 @@ __all__ = [
     'SourceCollectionItem',
     'Individual',
     'Fact',
-    'FactSource',
+    'Citation',
     'ExternalLink',
     'Relationship',
-    'RelationshipSource',
     'ResearchNote',
     'ConflictingFact'
 ]

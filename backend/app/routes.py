@@ -3,8 +3,8 @@ from . import db
 from datetime import datetime
 from .models import (
     Source, SourceReliabilityHistory, SourceCollection, SourceCollectionItem,
-    User, Individual, Fact, FactSource, ExternalLink,
-    Relationship, RelationshipSource, RelationshipQualifier,
+    User, Individual, Fact, Citation, ExternalLink,
+    Relationship, RelationshipQualifier,
     ResearchNote, ConflictingFact
 )
 

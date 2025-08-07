@@ -2,58 +2,15 @@ import enum
 import uuid
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import Enum
+from .enums import (
+    ConfidenceLevel,
+    Gender,
+    ExternalPlatform,
+)
 from .. import db
 from .user import User
 from .source import Source
-
-
-# ===== ENUMS =====
-
-class Gender(enum.Enum):
-    male = "male"
-    female = "female"
-    other = "other"
-    unknown = "unknown"
-
-
-class FactType(enum.Enum):
-    birth = "birth"
-    death = "death"
-    marriage = "marriage"
-    divorce = "divorce"
-    residence = "residence"
-    occupation = "occupation"
-    education = "education"
-    military = "military"
-    immigration = "immigration"
-    other = "other"
-
-
-class ConfidenceLevel(enum.Enum):
-    high = "high"
-    medium = "medium"
-    low = "low"
-    questionable = "questionable"
-
-
-class EvidenceType(enum.Enum):
-    primary = "primary"
-    secondary = "secondary"
-    circumstantial = "circumstantial"
-
-
-class SupportsFact(enum.Enum):
-    supports = "supports"
-    contradicts = "contradicts"
-    neutral = "neutral"
-
-
-class ExternalPlatform(enum.Enum):
-    ancestry = "ancestry"
-    myheritage = "myheritage"
-    familysearch = "familysearch"
-    findmypast = "findmypast"
-    other = "other"
+from .relationship import Relationship
 
 
 # ===== MODELS =====
@@ -84,12 +41,26 @@ class Individual(db.Model):
         return f"<Individual {self.preferred_name or (self.given_names + ' ' + self.surname)}>"
 
 
+class FactType(db.Model):
+    __tablename__ = "fact_types"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False, unique=True)
+    description = db.Column(db.Text)
+
+    facts = db.relationship("Fact", back_populates="fact_type")
+
+    def __repr__(self):
+        return f"<FactType {self.name}>"
+
+
 class Fact(db.Model):
     __tablename__ = "facts"
 
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     individual_id = db.Column(UUID(as_uuid=True), db.ForeignKey("individuals.id"), nullable=False)
-    fact_type = db.Column(Enum(FactType), nullable=False)
+    fact_type_id = db.Column(db.Integer, db.ForeignKey("fact_types.id"), nullable=False)
+    fact_type = db.relationship("FactType", back_populates="facts")
     fact_value = db.Column(db.String)
     fact_date = db.Column(db.Date)
     fact_place = db.Column(db.String)
@@ -105,30 +76,7 @@ class Fact(db.Model):
     created_by_user = db.relationship("User", backref="created_facts")
 
     def __repr__(self):
-        return f"<Fact {self.fact_type.value} for Individual {self.individual_id}>"
-
-
-class FactSource(db.Model):
-    __tablename__ = "fact_sources"
-
-    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    fact_id = db.Column(UUID(as_uuid=True), db.ForeignKey("facts.id"), nullable=False)
-    source_id = db.Column(UUID(as_uuid=True), db.ForeignKey("sources.id"), nullable=False)
-    evidence_type = db.Column(Enum(EvidenceType))
-    source_notes = db.Column(db.Text)
-    page_number = db.Column(db.Integer)
-    section_reference = db.Column(db.String)
-    supports_fact = db.Column(Enum(SupportsFact))
-
-    created_at = db.Column(db.DateTime, server_default=db.func.now())
-    created_by_user_id = db.Column(UUID(as_uuid=True), db.ForeignKey("users.id"), nullable=False)
-
-    fact = db.relationship("Fact", backref="sources")
-    source = db.relationship("Source", backref="fact_links")
-    created_by_user = db.relationship("User", backref="created_fact_sources")
-
-    def __repr__(self):
-        return f"<FactSource fact={self.fact_id} source={self.source_id}>"
+        return f"<Fact {self.fact_type.name} for Individual {self.individual_id}>"
 
 
 class ExternalLink(db.Model):

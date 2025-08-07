@@ -17,3 +17,22 @@ class Config:
     
     # CORS settings
     CORS_HEADERS = 'Content-Type'
+
+    @staticmethod
+    def build_db_uri(prefix="POSTGRES"):
+        user = os.getenv(f"{prefix}_USER", "postgres")
+        pw = os.getenv(f"{prefix}_PASSWORD", "")
+        host = os.getenv(f"{prefix}_HOST", "localhost")
+        port = os.getenv(f"{prefix}_PORT", "5432")
+        db = os.getenv(f"{prefix}_DB", "postgres")
+        return f"postgresql://{user}:{pw}@{host}:{port}/{db}"
+
+
+class DevelopmentConfig(Config):
+    SQLALCHEMY_DATABASE_URI = Config.build_db_uri("POSTGRES")
+    DEBUG = True
+
+
+class TestingConfig(Config):
+    SQLALCHEMY_DATABASE_URI = Config.build_db_uri("TEST_POSTGRES")
+    TESTING = True

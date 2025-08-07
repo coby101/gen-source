@@ -1,7 +1,7 @@
 from flask import request, jsonify, abort
 from uuid import UUID
 from app.models import (
-    db, Relationship, RelationshipSource, RelationshipQualifier
+    db, Relationship, Citation, RelationshipQualifier
 )
 from . import api
 
@@ -27,7 +27,7 @@ def serialize_relationship(rel):
         "created_by_user_id": str(rel.created_by_user_id)
     }
 
-def serialize_relationship_source(rs):
+def serialize_citation(rs):
     return {
         "id": str(rs.id),
         "relationship_id": str(rs.relationship_id),
@@ -104,32 +104,34 @@ def update_relationship(relationship_id):
 
 
 # ------------------------------
-# Relationship Source Routes
+# Citation Routes
 # ------------------------------
 
 @api.route("/relationships/<uuid:relationship_id>/sources", methods=["GET"])
-def get_relationship_sources(relationship_id):
-    sources = RelationshipSource.query.filter_by(relationship_id=relationship_id).all()
-    return jsonify([serialize_relationship_source(s) for s in sources])
+def get_citations(relationship_id):
+    citations = Citation.query.filter_by(
+        cited_object_type="relationship",
+        cited_object_id=relationship_id).all()
+    return jsonify([serialize_citation(c) for c in citations])
 
 
 @api.route("/relationships/<uuid:relationship_id>/sources", methods=["POST"])
-def add_relationship_source(relationship_id):
+def add_relationship_citation(relationship_id):
     data = request.get_json()
-    rs = RelationshipSource(
-        relationship_id=relationship_id,
+    citation = Citation(
+        cited_object_type="relationship",
+        cited_object_id=relationship_id,
         source_id=data["source_id"],
         evidence_type=data.get("evidence_type"),
         source_notes=data.get("source_notes"),
         page_number=data.get("page_number"),
         section_reference=data.get("section_reference"),
-        supports_relationship=data.get("supports_relationship"),
+        supports_claim=data.get("supports_relationship"),  # mapping to unified field
         created_by_user_id=data["created_by_user_id"]
     )
-    db.session.add(rs)
+    db.session.add(citation)
     db.session.commit()
-    return jsonify(serialize_relationship_source(rs)), 201
-
+    return jsonify(serialize_citation(citation)), 201
 
 # ------------------------------
 # Relationship Qualifier Routes

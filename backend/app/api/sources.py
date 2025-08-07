@@ -18,7 +18,7 @@ def serialize_source(source):
         "source_type": source.source_type.value if source.source_type else None,
         "file_path": source.file_path,
         "external_url": source.external_url,
-        "citation_text": source.citation_text,
+        "source_text": source.source_text,
         "source_date": source.source_date.isoformat() if source.source_date else None,
         "location": source.location,
         "confidence_level": source.confidence_level.value if source.confidence_level else None,
@@ -27,6 +27,21 @@ def serialize_source(source):
         "created_at": source.created_at.isoformat() if source.created_at else None,
         "updated_at": source.updated_at.isoformat() if source.updated_at else None,
         "created_by_user_id": str(source.created_by_user_id),
+    }
+
+def serialize_citation(c):
+    return {
+        "id": str(c.id),
+        "cited_object_id": str(c.cited_object_id),
+        "cited_object_type": c.cited_object_type,
+        "source_id": str(c.source_id),
+        "evidence_type": c.evidence_type.value if c.evidence_type else None,
+        "source_notes": c.source_notes,
+        "page_number": c.page_number,
+        "section_reference": c.section_reference,
+        "supports_claim": c.supports_claim.value if c.supports_claim else None,
+        "created_at": c.created_at.isoformat(),
+        "created_by_user_id": str(c.created_by_user_id)
     }
 
 def serialize_history(entry):
@@ -83,7 +98,7 @@ def create_source():
         source_type=data.get("source_type"),
         file_path=data.get("file_path"),
         external_url=data.get("external_url"),
-        citation_text=data.get("citation_text"),
+        source_text=data.get("source_text"),
         source_date=data.get("source_date"),
         location=data.get("location"),
         confidence_level=data.get("confidence_level"),
@@ -110,7 +125,7 @@ def update_source(source_id):
 
     for field in [
         "title", "description", "source_type", "file_path", "external_url",
-        "citation_text", "source_date", "location", "notes", "is_active"
+        "source_text", "source_date", "location", "notes", "is_active"
     ]:
         if field in data:
             setattr(source, field, data[field])

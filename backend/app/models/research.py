@@ -1,32 +1,10 @@
-import enum
 import uuid
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import Enum
 from .. import db
 from .user import User
-from .individual import Individual
-from .individual import Fact  # from individual.py
-
-
-# ===== ENUMS =====
-
-class NotePriority(enum.Enum):
-    high = "high"
-    medium = "medium"
-    low = "low"
-
-
-class NoteStatus(enum.Enum):
-    todo = "todo"
-    in_progress = "in_progress"
-    completed = "completed"
-    blocked = "blocked"
-
-
-class ResolutionStatus(enum.Enum):
-    unresolved = "unresolved"
-    resolved = "resolved"
-    dismissed = "dismissed"
+from .individual import Individual, Fact
+from .enums import NotePriority, NoteStatus, ResolutionStatus
 
 
 # ===== MODELS =====

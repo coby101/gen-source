@@ -1,7 +1,7 @@
 from flask import request, jsonify, abort
 from uuid import UUID
 from app.models import (
-    db, Individual, Fact, FactSource, ExternalLink
+    db, Individual, Fact, Citation, ExternalLink
 )
 from . import api
 
@@ -42,20 +42,6 @@ def serialize_fact(fact):
         "created_at": fact.created_at.isoformat(),
         "updated_at": fact.updated_at.isoformat() if fact.updated_at else None,
         "created_by_user_id": str(fact.created_by_user_id)
-    }
-
-def serialize_fact_source(fs):
-    return {
-        "id": str(fs.id),
-        "fact_id": str(fs.fact_id),
-        "source_id": str(fs.source_id),
-        "evidence_type": fs.evidence_type.value if fs.evidence_type else None,
-        "source_notes": fs.source_notes,
-        "page_number": fs.page_number,
-        "section_reference": fs.section_reference,
-        "supports_fact": fs.supports_fact.value if fs.supports_fact else None,
-        "created_at": fs.created_at.isoformat(),
-        "created_by_user_id": str(fs.created_by_user_id)
     }
 
 def serialize_external_link(link):
@@ -151,27 +137,27 @@ def create_fact(individual_id):
 
 
 @api.route("/facts/<uuid:fact_id>/sources", methods=["GET"])
-def get_fact_sources(fact_id):
-    sources = FactSource.query.filter_by(fact_id=fact_id).all()
-    return jsonify([serialize_fact_source(s) for s in sources])
+def get_citations(fact_id):
+    sources = Citation.query.filter_by(fact_id=fact_id).all()
+    return jsonify([serialize_citation(s) for s in sources])
 
 
 @api.route("/facts/<uuid:fact_id>/sources", methods=["POST"])
-def add_fact_source(fact_id):
+def add_fact_citation(fact_id):
     data = request.get_json()
-    link = FactSource(
+    link = Citation(
         fact_id=fact_id,
         source_id=data["source_id"],
         evidence_type=data.get("evidence_type"),
         source_notes=data.get("source_notes"),
         page_number=data.get("page_number"),
         section_reference=data.get("section_reference"),
-        supports_fact=data.get("supports_fact"),
+        supports_claim=data.get("supports_claim"),
         created_by_user_id=data["created_by_user_id"]
     )
     db.session.add(link)
     db.session.commit()
-    return jsonify(serialize_fact_source(link)), 201
+    return jsonify(serialize_citation(link)), 201
 
 
 @api.route("/individuals/<uuid:individual_id>/links", methods=["GET"])

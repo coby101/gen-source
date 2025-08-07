@@ -1,43 +1,41 @@
-import enum
 import uuid
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy import Enum
+from .enums import (
+    ConfidenceLevel,
+    ReliabilityStatus,
+    EvidenceType,
+    SupportsClaim
+)
 from .. import db
 from .user import User
+from .relationship import Relationship
+from .individual import Fact
 
 
-class SourceType(enum.Enum):
-    document = "document"
-    image = "image"
-    pdf = "pdf"
-    citation = "citation"
-    external_record = "external_record"
+class SourceType(db.Model):
+    __tablename__ = "source_types"
 
+    id = db.Column(db.Integer, primary_key=True)
+    key = db.Column(db.String(64), unique=True, nullable=False)  # e.g., 'birth_certificate'
+    label = db.Column(db.String(128), nullable=False)            # e.g., 'Birth Certificate'
+    description = db.Column(db.Text)                             # optional: explain its use
+    is_active = db.Column(db.Boolean, default=True)
 
-class ConfidenceLevel(enum.Enum):
-    high = "high"
-    medium = "medium"
-    low = "low"
-    questionable = "questionable"
-
-
-class ReliabilityStatus(enum.Enum):
-    reliable = "reliable"
-    questionable = "questionable"
-    unreliable = "unreliable"
-    deprecated = "deprecated"
+    sources = db.relationship("Source", back_populates="source_type")
 
 
 class Source(db.Model):
     __tablename__ = "sources"
 
+    # Columns
     id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     title = db.Column(db.String(255), nullable=False)
     description = db.Column(db.Text)
-    source_type = db.Column(Enum(SourceType), nullable=False)
+    source_type_id = db.Column(db.Integer, db.ForeignKey("source_types.id"), nullable=False)
     file_path = db.Column(db.String)
     external_url = db.Column(db.String)
-    citation_text = db.Column(db.String)
+    source_text = db.Column(db.String)
     source_date = db.Column(db.Date)
     location = db.Column(db.String)
     confidence_level = db.Column(Enum(ConfidenceLevel))
@@ -48,8 +46,11 @@ class Source(db.Model):
     updated_at = db.Column(db.DateTime, onupdate=db.func.now())
     created_by_user_id = db.Column(UUID(as_uuid=True), db.ForeignKey("users.id"), nullable=False)
 
+    # Relationships
+    source_type = db.relationship("SourceType", back_populates="sources")
     created_by_user = db.relationship("User", backref="sources")
 
+    # Methods
     def update_confidence_level(self, new_level, reason, user_id):
         if self.confidence_level != new_level:
             from .source import SourceReliabilityHistory
@@ -63,7 +64,7 @@ class Source(db.Model):
             db.session.add(history)
 
     def __repr__(self):
-        return f"<Source {self.title} ({self.source_type.value})>"
+        return f"<Source {self.title} ({self.source_type.label})>"
 
 
 class SourceReliabilityHistory(db.Model):
@@ -114,3 +115,34 @@ class SourceCollectionItem(db.Model):
 
     def __repr__(self):
         return f"<SourceCollectionItem source={self.source_id} collection={self.collection_id}>"
+
+
+class Citation(db.Model):
+    __tablename__ = "citations"
+
+    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    cited_object_id = db.Column(UUID(as_uuid=True), nullable=False)
+    cited_object_type = db.Column(db.String(50), nullable=False)  # "fact" or "relationship"
+    source_id = db.Column(UUID(as_uuid=True), db.ForeignKey("sources.id"), nullable=False)
+    evidence_type = db.Column(Enum(EvidenceType))
+    source_notes = db.Column(db.Text)
+    page_number = db.Column(db.Integer)
+    section_reference = db.Column(db.String)
+    supports_claim = db.Column(Enum(SupportsClaim))
+
+    created_at = db.Column(db.DateTime, server_default=db.func.now())
+    created_by_user_id = db.Column(UUID(as_uuid=True), db.ForeignKey("users.id"), nullable=False)
+
+    source = db.relationship("Source", backref="citations")
+    created_by_user = db.relationship("User", backref="created_citations")
+
+    @property
+    def cited_object(self):
+        if self.cited_object_type == "fact":
+            return db.session.get(Fact, self.cited_object_id)
+        elif self.cited_object_type == "relationship":
+            return db.session.get(Relationship, self.cited_object_id)
+        return None
+
+    def __repr__(self):
+        return f"<Citation {self.cited_object_type}={self.cited_object_id} source={self.source_id}>"
