@@ -53,7 +53,6 @@ class Source(db.Model):
     # Methods
     def update_confidence_level(self, new_level, reason, user_id):
         if self.confidence_level != new_level:
-            from .source import SourceReliabilityHistory
             history = SourceReliabilityHistory(
                 source_id=self.id,
                 reliability_status=new_level,

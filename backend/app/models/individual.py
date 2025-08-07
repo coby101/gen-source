@@ -9,8 +9,6 @@ from .enums import (
 )
 from .. import db
 from .user import User
-from .source import Source
-from .relationship import Relationship
 
 
 # ===== MODELS =====
@@ -45,8 +43,9 @@ class FactType(db.Model):
     __tablename__ = "fact_types"
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False, unique=True)
-    description = db.Column(db.Text)
+    key = db.Column(db.String(64), unique=True, nullable=False)  # e.g., 'birth_certificate'
+    label = db.Column(db.String(128), nullable=False)            # e.g., 'Birth Certificate'
+    description = db.Column(db.Text)                             # optional: explain its use
 
     facts = db.relationship("Fact", back_populates="fact_type")
 

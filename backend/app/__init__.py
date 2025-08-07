@@ -3,8 +3,6 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_cors import CORS
-from dotenv import load_dotenv
-load_dotenv()
 
 # Initialize extensions
 db = SQLAlchemy()
@@ -12,6 +10,7 @@ migrate = Migrate()
 cors = CORS()
 
 def create_app():
+
     app = Flask(__name__)
 
     # Choose config class based on FLASK_ENV
