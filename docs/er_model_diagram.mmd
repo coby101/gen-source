@@ -1,0 +1,188 @@
+erDiagram
+    %% Core Entities
+    INDIVIDUALS {
+        uuid id PK
+        string given_names
+        string surname
+        string preferred_name
+        enum gender "male|female|other|unknown"
+        date birth_date_estimated
+        date death_date_estimated
+        string birth_place
+        string death_place
+        text notes
+        boolean is_living
+        timestamp created_at
+        timestamp updated_at
+        uuid created_by_user_id FK
+    }
+
+    FACT_TYPES {
+        integer id PK
+        string key UK
+        string label
+        text description
+    }
+
+    FACTS {
+        uuid id PK
+        uuid individual_id FK
+        integer fact_type_id FK
+        string fact_value
+        date fact_date
+        string fact_place
+        text description
+        enum confidence_level "high|medium|low|questionable|certain|doubtful|speculative"
+        boolean is_primary
+        timestamp created_at
+        timestamp updated_at
+        uuid created_by_user_id FK
+    }
+
+    RELATIONSHIPS {
+        uuid id PK
+        uuid individual1_id FK
+        uuid individual2_id FK
+        enum relationship_type "parent|child|spouse|partner|sibling|guardian|ward|other"
+        date relationship_start_date
+        date relationship_end_date
+        string relationship_notes
+        enum confidence_level "high|medium|low|questionable|certain|doubtful|speculative"
+        timestamp created_at
+        timestamp updated_at
+        uuid created_by_user_id FK
+    }
+
+    RELATIONSHIP_QUALIFIERS {
+        uuid id PK
+        uuid relationship_id FK
+        enum qualifier "natural|adoptive|biological|step|surrogate|legal|social|genetic"
+        timestamp created_at
+        uuid created_by_user_id FK
+    }
+
+    SOURCE_TYPES {
+        integer id PK
+        string key UK
+        string label
+        text description
+        boolean is_active
+    }
+
+    SOURCES {
+        uuid id PK
+        string title
+        text description
+        integer source_type_id FK
+        string file_path
+        string external_url
+        string source_text
+        date source_date
+        string location
+        enum confidence_level "high|medium|low|questionable|certain|doubtful|speculative"
+        text notes
+        boolean is_active
+        timestamp created_at
+        timestamp updated_at
+        uuid created_by_user_id FK
+    }
+
+    SOURCE_COLLECTIONS {
+        uuid id PK
+        string name
+        text description
+        uuid parent_collection_id FK
+        timestamp created_at
+        uuid created_by_user_id FK
+    }
+
+    SOURCE_COLLECTION_ITEMS {
+        uuid source_id PK,FK
+        uuid collection_id PK,FK
+        timestamp added_at
+        uuid added_by_user_id FK
+    }
+
+    SOURCE_RELIABILITY_HISTORY {
+        uuid id PK
+        uuid source_id FK
+        enum reliability_status "reliable|questionable|unreliable|deprecated"
+        text reason
+        timestamp changed_at
+        uuid changed_by_user_id FK
+    }
+
+    CITATIONS {
+        uuid id PK
+        uuid cited_object_id
+        string cited_object_type
+        uuid source_id FK
+        enum evidence_type "primary|secondary|circumstantial"
+        text source_notes
+        integer page_number
+        string section_reference
+        enum supports_claim "supports|contradicts|neutral"
+        timestamp created_at
+        uuid created_by_user_id FK
+    }
+
+    EXTERNAL_LINKS {
+        uuid id PK
+        uuid individual_id FK
+        enum platform "ancestry|myheritage|familysearch|findmypast|other"
+        string external_id
+        string external_url
+        text sync_notes
+        timestamp last_synced
+        boolean is_active
+        timestamp created_at
+        uuid created_by_user_id FK
+    }
+
+    RESEARCH_NOTES {
+        uuid id PK
+        uuid individual_id FK
+        string title
+        text content
+        enum priority "high|medium|low"
+        enum status "todo|in_progress|completed|blocked"
+        timestamp created_at
+        timestamp updated_at
+        uuid created_by_user_id FK
+    }
+
+    CONFLICTING_FACTS {
+        uuid id PK
+        uuid fact1_id FK
+        uuid fact2_id FK
+        text conflict_description
+        enum resolution_status "unresolved|resolved|dismissed"
+        text resolution_notes
+        uuid resolved_by_user_id FK
+        timestamp resolved_at
+        timestamp created_at
+        uuid created_by_user_id FK
+    }
+
+    %% Relationships
+    INDIVIDUALS ||--o{ FACTS : "has"
+    INDIVIDUALS ||--o{ RELATIONSHIPS : "individual1"
+    INDIVIDUALS ||--o{ RELATIONSHIPS : "individual2"
+    INDIVIDUALS ||--o{ EXTERNAL_LINKS : "linked_to"
+    INDIVIDUALS ||--o{ RESEARCH_NOTES : "has"
+
+    FACT_TYPES ||--o{ FACTS : "defines"
+    FACTS ||--o{ CITATIONS : "supported_by"
+    FACTS ||--o{ CONFLICTING_FACTS : "fact1"
+    FACTS ||--o{ CONFLICTING_FACTS : "fact2"
+
+    RELATIONSHIPS ||--o{ RELATIONSHIP_QUALIFIERS : "qualified_by"
+    RELATIONSHIPS ||--o{ CITATIONS : "supported_by"
+
+    SOURCE_TYPES ||--o{ SOURCES : "defines"
+    SOURCES ||--o{ SOURCE_COLLECTION_ITEMS : "contained_in"
+    SOURCES ||--o{ SOURCE_RELIABILITY_HISTORY : "reliability_tracked"
+    SOURCES ||--o{ CITATIONS : "supports"
+
+    SOURCE_COLLECTIONS ||--o{ SOURCE_COLLECTIONS : "parent_of"
+    SOURCE_COLLECTIONS ||--o{ SOURCE_COLLECTION_ITEMS : "contains"
